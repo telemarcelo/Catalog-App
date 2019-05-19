@@ -1,0 +1,116 @@
+<html>
+
+
+<head>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script src="//apis.google.com/js/platform.js?onload=start"> </script>
+</head>
+
+<body>
+  <div class="header">
+    <div class="left"><h1>Item Catalog</h1></div>
+  	<div  class="g-signin2 right" data-onsuccess="onSignIn" style="padding-top:22px"></div>
+    <div class="signOut right" style="padding-top:30px"><a href="#" onclick="signOut();">Sign out</a></div>
+  </div> 
+  <div class="body">
+    <h2>{{item.name}}</h2>
+    <div id="desc">{{item.description}}</div>
+    <div id="editOrDelete">
+      <a id="editItem" href={{"\editItem\\"+item.category.name+"\\"+item.name}}>Edit</a> | <a id="deleteItem" href={{"\deleteItem\\"+item.category.name+"\\"+item.name}}>Delete</a>
+    </div>
+  </div>
+</body>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: Helvetica;
+}
+  .header{
+    display: inline-block;
+    width:100%;
+    background-color:navy;
+    color:white;
+  }
+
+  .body, #editOrDelete{
+    margin-left:5%;
+    margin-right:5%;
+    display: inline-block;
+    width:90%;
+    background-color:#E0E0E0;
+    color:navy;
+    line-height: .6;
+    padding:20px;
+  }
+  
+  #desc{
+    line-height: 1; 
+    display:inline-block;
+    border-style: solid;
+    padding: 10px;  
+    border-width: 2px;
+
+  }
+
+  .left{
+    float:left;
+    padding-left: 50px;
+  }
+  .right{
+    float:right;
+    padding-right: 50px;
+  }
+  .g-signin2{
+    display:visible;
+  }  
+  #graylics {
+    color: gray;  
+    font-style: italic;
+  }
+  #newItem, #editItem, #deleteItem{
+    color:red;
+  }
+  a{
+    color:white;
+  }
+  .a{
+    color:red;
+  }
+  .items{
+    padding-top:20px
+  }
+</style>
+
+<script>
+function signOut() {
+    $('.g-signin2').attr('style', 'display: visible');
+    $('.signOut').attr('style', 'display: none');
+    auth2 = gapi.auth2.getAuthInstance();
+    
+    auth2.signOut().then(function () {
+      console.log('User signed out.');
+    });
+  }
+
+function onSignIn(googleUser) {
+   $('.g-signin2').attr('style', 'display: none');
+    $('.signOut').attr('style', 'display: visible');
+  var profile = googleUser.getBasicProfile();
+  
+    $('#name').html(profile.getName())
+    $('#email').html(profile.getEmail())
+    
+    $.ajax({
+      type: 'POST',
+      url: '/gconnect?state={{STATE}}',
+      processData: false,
+      data: profile.getEmail(),	
+      contentType: 'application/octet-stream; charset=utf-8',
+      success: function(result) {
+        $('#result').html(result)
+      }
+    });   
+  }
+</script>
+</html>

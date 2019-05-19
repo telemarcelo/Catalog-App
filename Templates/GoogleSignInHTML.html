@@ -1,0 +1,162 @@
+<html>
+
+<meta name="google-signin-client_id" content="{{CLIENT_ID}}">	
+
+<head>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script src="//apis.google.com/js/platform.js?onload=start" async defer> </script>
+</head>
+
+<body>
+  <div class="header">
+    <div class="left"><h1>Item Catalog</h1></div>
+    
+  	<button id="SignIn" onclick="signIn()">Google Sign In</button>
+    <button id="SignOut" onclick="signOut()">Google Sign Out</button>
+    <div id="result"></div>
+  </div> 
+<div class="body">
+  <div class="categories left">
+    <h2>Categories</h2>
+    {% for cat in cats %}
+    <p class="a">
+      {{cat.name}}  
+    </p>
+    {% endfor %}
+  </div>
+  <div class="items left">
+    <a id="newItem" href= "newItem">New Item</a>
+    <h2>Latest Items</h2>
+    {% for item in items %}
+    <p class="a">
+      <a id="newItem" href= {{"item/"+item.category.name+"/"+item.name}}>      
+        {{item.name}}</a><span id="graylics">  ({{item.category.name}})</span>
+    </p>
+    {% endfor %}
+  </div>
+</div>
+</body>
+
+<style>
+  * {
+  box-sizing: border-box;
+  font-family: Helvetica;
+}
+  .header{
+    display: inline-block;
+    width:100%;
+    background-color:navy;
+    color:white;
+  }
+
+  .body{
+    margin-left:5%;
+    margin-right:5%;
+    display: inline-block;
+    width:90%;
+    background-color:#E0E0E0;
+    color:navy;
+    line-height: .6;
+  }
+
+  .left{
+    float:left;
+    padding-left: 50px;
+  }
+  #result, #SignIn, #SignOut{
+    float:right;
+    padding: 10px;
+    margin:10px;
+  }
+  #result{
+    display:inline-flex;
+  }
+  
+
+  #graylics {
+    color: gray;  
+    font-style: italic;
+  }
+  #newItem{
+    color:red;
+  }
+  a{
+    color:white;
+  }
+  .a{
+    color:red;
+  }
+  .items{
+    padding-top:20px
+  }
+</style>
+
+<script>
+  function start() {
+          $('#SignIn').attr('style', 'display: visible');
+          $('#SignOut').attr('style', 'display: none');
+    gapi.load('auth2', function() {
+      auth2 = gapi.auth2.init({
+        client_id: '{{CLIENT_ID}}',
+      });
+    });
+   
+  }
+
+  function signIn(){
+    $('#body').off('click', '#SignInOut', signOut);
+    auth2.grantOfflineAccess().then(signInCallback);
+  }
+
+  function signOut() {
+    //auth2.disconnect()
+    $.ajax({
+      type: 'POST',
+      url: '/gdisconnect',
+      processData: false,
+      data: '',
+      contentType: 'application/octet-stream; charset=utf-8',
+      success: function(result){
+        console.log("success")
+        $('#result').empty();
+      }
+      })
+    $('#SignIn').attr('style', 'display: visible');
+    $('#SignOut').attr('style', 'display: none');
+}
+  function signInCallback(googleUser) {if (googleUser['code']) {
+    // Hide the sign-in button now that the user is authorized
+    //$('.g-signin2').attr('style', 'display: none');
+    //$('.signOut').attr('style', 'display: visible');
+    // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main restaurants page
+    $.ajax({
+      type: 'POST',
+      url: '/gconnect?state={{STATE}}',
+      processData: false,
+      data: googleUser['code'],
+      contentType: 'application/octet-stream; charset=utf-8',
+      success: function(result) {
+        // Handle or verify the server response if necessary.
+        if (result) {
+          $('#SignIn').attr('style', 'display: none');
+          $('#SignOut').attr('style', 'display:visible');
+          //$('#SignInOut').html('ASSS')
+          console.log(result);
+          $('#result').html(result)
+            setTimeout(function() {console.log(result)}, 5000);
+          
+      } else if (authResult['error']) {
+    console.log('There was an error: ' + authResult['error']);
+  } else {
+        $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+         }
+      }
+      
+  }); } }
+
+//  $('#SignInOut').click(signIn);
+  //$('#SignInOut').click(signOut);
+
+  
+</script>
+</html>

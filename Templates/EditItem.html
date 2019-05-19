@@ -1,0 +1,101 @@
+<html>
+
+
+<head>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script src="//apis.google.com/js/platform.js?onload=start"> </script>
+</head>
+
+<body>
+  <div class="header">
+    <div class="left"><h1>Item Catalog</h1></div>
+  	<div  class="g-signin2 right" data-onsuccess="onSignIn" style="padding-top:22px"></div>
+    <div class="signOut right" style="padding-top:30px"><a href="#" onclick="signOut();">Sign out</a></div>
+  </div> 
+<div class="body">
+<form action="/newItem" method="post">
+  <h2>Name</h2>
+  <input  type = "text"
+                   name = "name"
+                   value = "{{item.name}}" /></input><br>
+  <h2>Description</h2>
+  <textarea name = "description"
+                    rows = "10"
+                    cols = "80" >{{item.description}}</textarea><br>
+  
+  <h2>Category</h2>
+  <select name = "category" value={{item.category.name}}>
+    {% for cat in cats %}
+      <option  value={{cat.name}}>{{cat.name}}</option>
+    {% endfor %}
+  </select>
+  <input type="submit" value="Save Item">
+</form>
+</body>
+
+<style>
+
+  * {
+  box-sizing: border-box;
+}
+  .header{
+    display: inline-block;
+    width:100%;
+    background-color:navy;
+    color:white;
+  }
+
+  .body{
+    width:100%;
+    background-color:lightgrey;
+    color:navy;
+  }
+
+  .left{
+    float:left;
+    padding-left: 50px;
+  }
+  .right{
+    float:right;
+    padding-right: 50px;
+  }
+  .g-signin2{
+    display:visible;
+  }
+  a{
+    color:white;
+  }
+</style>
+
+<script>
+function signOut() {
+    $('.g-signin2').attr('style', 'display: visible');
+    $('.signOut').attr('style', 'display: none');
+    auth2 = gapi.auth2.getAuthInstance();
+    
+    auth2.signOut().then(function () {
+      console.log('User signed out.');
+    });
+  }
+
+function onSignIn(googleUser) {
+   $('.g-signin2').attr('style', 'display: none');
+    $('.signOut').attr('style', 'display: visible');
+  var profile = googleUser.getBasicProfile();
+  
+    $('#name').html(profile.getName())
+    $('#email').html(profile.getEmail())
+    
+    $.ajax({
+      type: 'POST',
+      url: '/gconnect?state={{STATE}}',
+      processData: false,
+      data: profile.getEmail(),	
+      contentType: 'application/octet-stream; charset=utf-8',
+      success: function(result) {
+        $('#result').html(result)
+      }
+    });   
+  }
+</script>
+</html>
